@@ -1,3 +1,4 @@
+
 #menu_item.py - מחלקת פריט תפריט ותתי-מחלקות
 
 
@@ -161,6 +162,8 @@ class Appetizer(MenuItem):
         - לקרוא ל-__init__ של מחלקת האב
         - לאתחל _selected_bread ל-None
         """
+
+        super().__init__(name, price,description)
         self._selected_bread = None
 
     # --- Properties ---
@@ -168,7 +171,7 @@ class Appetizer(MenuItem):
     @property
     def selected_bread(self) -> str:
         """מחזיר את סוג הלחם שנבחר (או None)"""
-        raise NotImplementedError("Implement this method")
+        return self._selected_bread
 
     # --- Instance Methods ---
 
@@ -187,7 +190,12 @@ class Appetizer(MenuItem):
         Returns:
             True אם הצליח, False אחרת
         """
-        raise NotImplementedError("Implement this method")
+        if bread_type in Appetizer._bread_inventory:
+            if Appetizer._bread_inventory[bread_type] >= 1 :
+                self._selected_bread =bread_type
+                Appetizer._bread_inventory[bread_type] -= 1
+                return True
+        return False
 
     def remove_bread(self):
         """
@@ -196,7 +204,9 @@ class Appetizer(MenuItem):
         דרישות:
         - אם יש לחם נבחר: להחזיר 1 למלאי ולאפס את _selected_bread
         """
-        raise NotImplementedError("Implement this method")
+        if self._selected_bread:
+            Appetizer._bread_inventory[self._selected_bread] += 1
+            self._selected_bread = None
 
     def get_total_price(self) -> float:
         """
@@ -205,11 +215,14 @@ class Appetizer(MenuItem):
         Returns:
             מחיר + BREAD_PRICE אם נבחר לחם, אחרת רק המחיר
         """
-        raise NotImplementedError("Implement this method")
+        if self._selected_bread:
+            return self.price + Appetizer.BREAD_PRICE
+        else:
+            return self.price
 
     def get_category(self) -> str:
         """מחזיר 'Appetizers'"""
-        raise NotImplementedError("Implement this method")
+        return 'Appetizers'
 
     # --- Class Methods ---
 
@@ -221,7 +234,11 @@ class Appetizer(MenuItem):
         Returns:
             רשימה של סוגי לחם שהכמות שלהם > 0
         """
-        raise NotImplementedError("Implement this method")
+        available_breads = []
+        for bread, num in Appetizer._bread_inventory.items():
+            if num >= 1 :
+                available_breads.append(bread)
+        return available_breads
 
     @classmethod
     def add_bread_to_inventory(cls, bread_type: str, quantity: int):
@@ -236,7 +253,10 @@ class Appetizer(MenuItem):
             bread_type: סוג הלחם
             quantity: כמות להוספה
         """
-        raise NotImplementedError("Implement this method")
+        if bread_type in Appetizer._bread_inventory:
+            Appetizer._bread_inventory[bread_type] += quantity
+        else:
+            Appetizer._bread_inventory[bread_type] = quantity
 
     @classmethod
     def remove_bread_from_inventory(cls, bread_type: str, quantity: int) -> bool:
@@ -251,7 +271,10 @@ class Appetizer(MenuItem):
         Returns:
             True אם הצליח, False אחרת
         """
-        raise NotImplementedError("Implement this method")
+        if bread_type in Appetizer._bread_inventory and Appetizer._bread_inventory[bread_type] >= quantity:
+            Appetizer._bread_inventory[bread_type] -= quantity
+            return True
+        return False
 
     @classmethod
     def get_bread_quantity(cls, bread_type: str) -> int:
@@ -261,12 +284,14 @@ class Appetizer(MenuItem):
         Returns:
             הכמות במלאי, או 0 אם לא קיים
         """
-        raise NotImplementedError("Implement this method")
+        if bread_type in Appetizer._bread_inventory:
+            return Appetizer._bread_inventory[bread_type]
+        return 0
 
     @classmethod
     def get_bread_inventory(cls) -> dict:
-        """מחזיר עותק של מילון המלאי"""
-        raise NotImplementedError("Implement this method")
+        copy_dict = Appetizer._bread_inventory.copy()
+        return copy_dict
 
     # --- Magic Methods ---
 
@@ -277,7 +302,10 @@ class Appetizer(MenuItem):
         Returns:
             "name - $price" או "name - $price (with bread_type +$5.00)"
         """
-        raise NotImplementedError("Implement this method")
+        if self._selected_bread:
+            return f"{self.name} - {self.format_price(self.price)} ( with {self._selected_bread} + $5.00)"
+        else:
+            return f"{self.name} - {self.format_price(self.price)} "
 
 
 class MainCourse(MenuItem):

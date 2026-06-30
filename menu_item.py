@@ -329,12 +329,13 @@ class MainCourse(MenuItem):
         - לקרוא ל-__init__ של מחלקת האב
         - לאתחל _selected_side ל-None
         """
-        raise NotImplementedError("Implement this method")
+        super().__init__(name, price, description)
+        self._selected_side = None
 
     @property
     def selected_side(self) -> str:
         """מחזיר את התוספת שנבחרה (או None)"""
-        raise NotImplementedError("Implement this method")
+        return self._selected_side
 
     def select_side(self, side: str) -> bool:
         """
@@ -345,16 +346,19 @@ class MainCourse(MenuItem):
         - אם כן: לעדכן _selected_side ולהחזיר True
         - אם לא: להחזיר False
         """
-        raise NotImplementedError("Implement this method")
+        if side in MainCourse._side_options:
+            self._selected_side = side
+            return True
+        return False
 
     def get_category(self) -> str:
         """מחזיר 'Main Courses'"""
-        raise NotImplementedError("Implement this method")
+        return "Main Courses"
 
     @classmethod
     def get_side_options(cls) -> list:
         """מחזיר עותק של רשימת התוספות"""
-        raise NotImplementedError("Implement this method")
+        return MainCourse._side_options
 
     @classmethod
     def add_side_option(cls, side: str):
@@ -364,12 +368,14 @@ class MainCourse(MenuItem):
         דרישות:
         - להוסיף רק אם לא קיימת כבר
         """
-        raise NotImplementedError("Implement this method")
+        if side not in MainCourse._side_options:
+            MainCourse._side_options.append(side)
 
     @classmethod
     def remove_side_option(cls, side: str):
         """הסרת תוספת מהרשימה (אם קיימת)"""
-        raise NotImplementedError("Implement this method")
+        if side in MainCourse._side_options:
+            MainCourse._side_options.remove(side)
 
     def __str__(self) -> str:
         """
@@ -378,7 +384,9 @@ class MainCourse(MenuItem):
         Returns:
             "name - $price" או "name - $price (with side)"
         """
-        raise NotImplementedError("Implement this method")
+        if self._selected_side:
+            return f"{self.name} - {self.format_price(self.price)} (with {self._selected_side})"
+        return f"{self.name} - {self.format_price(self.price)}"
 
 
 class Dessert(MenuItem):
@@ -397,16 +405,17 @@ class Dessert(MenuItem):
         - לקרוא ל-__init__ של מחלקת האב
         - לשמור את is_sugar_free ב-_is_sugar_free
         """
-        raise NotImplementedError("Implement this method")
+        super().__init__(name, price, description)
+        self._is_sugar_free = is_sugar_free
 
     @property
     def is_sugar_free(self) -> bool:
         """מחזיר האם הקינוח ללא סוכר"""
-        raise NotImplementedError("Implement this method")
+        return self._is_sugar_free
 
     def get_category(self) -> str:
         """מחזיר 'Desserts'"""
-        raise NotImplementedError("Implement this method")
+        return 'Desserts'
 
     def __str__(self) -> str:
         """
@@ -415,7 +424,9 @@ class Dessert(MenuItem):
         Returns:
             "name - $price" או "name - $price (sugar-free)"
         """
-        raise NotImplementedError("Implement this method")
+        if self.is_sugar_free:
+            return f"{self.name} - {self.format_price(self.price)} (sugar-free)"
+        return f"{self.name} - {self.format_price(self.price)}"
 
 
 class Beverage(MenuItem):
@@ -442,12 +453,14 @@ class Beverage(MenuItem):
         - להשתמש ב-setter של size (לולידציה)
         - לשמור את is_cold ב-_is_cold
         """
-        raise NotImplementedError("Implement this method")
+        super().__init__(name, price, description)
+        self.size = size
+        self._is_cold = is_cold
 
     @property
     def size(self) -> str:
         """מחזיר את גודל המשקה"""
-        raise NotImplementedError("Implement this method")
+        return self.size
 
     @size.setter
     def size(self, value: str):
@@ -457,16 +470,18 @@ class Beverage(MenuItem):
         דרישות:
         - אם הגודל לא ברשימת SIZES, להעלות ValueError עם הודעה "Size must be one of: ['S', 'M', 'L']"
         """
-        raise NotImplementedError("Implement this method")
-
+        if value in Beverage.SIZES:
+            self._size = value
+        else:
+            raise ValueError("Size must be one of: ['S', 'M', 'L']")
     @property
     def is_cold(self) -> bool:
         """מחזיר האם המשקה קר"""
-        raise NotImplementedError("Implement this method")
+        return self._is_cold
 
     def get_category(self) -> str:
         """מחזיר 'Beverages'"""
-        raise NotImplementedError("Implement this method")
+        return "Beverages"
 
     @staticmethod
     def get_size_multiplier(size: str) -> float:
@@ -476,8 +491,14 @@ class Beverage(MenuItem):
         Returns:
             S -> 0.8, M -> 1.0, L -> 1.3
         """
-        raise NotImplementedError("Implement this method")
-
+        if size == "S":
+            return 0.8
+        elif size == "M":
+            return 1.0
+        elif size == "L":
+            return 1.3
+        else:
+            raise ValueError("unexpected size")
     def get_total_price(self) -> float:
         """
         מחזיר מחיר לפי גודל.
@@ -485,7 +506,7 @@ class Beverage(MenuItem):
         Returns:
             מחיר בסיס כפול מכפיל הגודל
         """
-        raise NotImplementedError("Implement this method")
+        return self.price * Beverage.get_size_multiplier(self.size)
 
     def __str__(self) -> str:
         """
@@ -494,5 +515,9 @@ class Beverage(MenuItem):
         Returns:
             "name (size, cold/hot) - $price"
         """
-        raise NotImplementedError("Implement this method")
+        if self.is_cold:
+            return f"{self.name} ({self.size}, cold) - {self.format_price(self.price)}"
+        return f"{self.name} ({self.size}, hot) - {self.format_price(self.price)}"
+
+
 
